@@ -78,7 +78,7 @@
                 'public' => [
                     0 => '/public',
                     'js' => [
-                        'vaptcha' => '/vaptcha/v3.js'
+                        'ct4' => '/ct4.js'
                     ],
                     'img' => [
                         0 => '/img',
@@ -169,13 +169,6 @@
                     0 => 'https://www.regery.com/en?pr=jjjvhib'
                 ]
             ],
-            'vaptcha' => [
-                'api' => [
-                    'sms' => [
-                        0 => 'https://sms.vaptcha.com/send'
-                    ]
-                ]
-            ],
             'node_modules' => [
                 0 => '/_nuxt/node_modules'
             ],
@@ -209,7 +202,7 @@
         ];
         public static $VAPTCHA_CONFIG = [
             'status' => true,
-            'vid' => '5fd36488e1874d214d49ad27',
+            'appId' => 'b89eee6fe2417070bbfecfaf604a752a',
             
             'scenes' => [
                 'test' => 0,
@@ -221,13 +214,36 @@
                 'blank' => 6
             ]
         ];
-        public static $VAPTCHA_SMS_CONFIG = [
-            'templateIds' => [
-                'default' => '1'
-            ],
+        /** 时代的眼泪 ~
+         * Vaptcha 疑似跑路了。
+         * 而且最近才发现国内 SMS 政策发生大便。。。
+         * 应该是去年七月份的事了，tzy 简直跟断网了一样不知道
+         * 难道说，这是九尾狐官网最近 N 个月无人问津之罪魁祸首？
+         * ……
+         * 于是九尾狐工作室改用阿里的验证服务，
+         * 然后蠢猪官网直接上阿里全家桶。
+         *                                  -- 2026/3/12 */
+        // public static $VAPTCHA_SMS_CONFIG = [
+        //     'templateIds' => [
+        //         'default' => '1'
+        //     ],
             
+        //     'sendLimitPerDay' => 5,
+        //     'verifyCodeExpTime' => 60 * 10 * 1000
+        // ];
+        public static $SMS_VERIFY_CONFIG = [
+            'countryCode' => '86',
             'sendLimitPerDay' => 5,
-            'verifyCodeExpTime' => 60 * 10 * 1000
+            'verifyCodeExpTime' => 60 * 10 * 1000,
+            'interval' => 60,
+            'duplicatePolicy' => 1,
+            'codeLength' => 6,
+            'codeType' => 1,
+            'caseAuthPolicy' => 1,
+            'templateParams' => [
+                'code' => '##code##',
+                'min' => '__VERIFY_MINUTES__'
+            ]
         ];
         public static $STATICCS_CONFIG = [
             'root' => '/www/wwwroot/static.jwhgzs.com'

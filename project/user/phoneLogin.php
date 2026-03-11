@@ -1,7 +1,7 @@
 <?
     /* 用户登录（手机号）API */
     
-    list($uid, $json) = app_check('xvpa', ['phone', 'phoneVerify']);
+    list($uid, $json, $file, $pvr) = app_check('xvpa', ['phone', 'phoneVerify']);
     
     $data = sql_query1('SELECT * FROM user WHERE phone = ?', [intval($json['phone'])]);
     if (! $data) {

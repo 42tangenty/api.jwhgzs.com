@@ -1,7 +1,7 @@
 <?
     /* 用户注册API */
     
-    list($uid, $json) = app_check('xvpa', ['name', 'pass', 'phone', 'phoneVerify']);
+    list($uid, $json, $file, $pvr) = app_check('xvpa', ['name', 'pass', 'phone', 'phoneVerify']);
     
     $name_min = c::$USERINF_LENGTH['name_min'];
     $name_max = c::$USERINF_LENGTH['name_max'];

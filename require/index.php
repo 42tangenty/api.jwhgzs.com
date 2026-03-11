@@ -434,9 +434,16 @@
         return false;
     }
     function app_verifyPhone($phone = '', $verifyCode = '') {
-        // sendTime + exp >= time, 故sendTime >= time - exp
-        $data = sql_query1('SELECT id FROM phoneVerify WHERE phone = ? AND verifyCode = ? AND sendTime >= ? AND used IS NULL AND userIP LIKE ? AND userUA LIKE ?', [intval($phone), intval($verifyCode), time_microtime() - c::$VAPTCHA_SMS_CONFIG['verifyCodeExpTime'], app_getUserIP(), app_getUserUA()]);
-        return ($data ? intval($data['id']) : false);
+        $smsConfig = c::$SMS_VERIFY_CONFIG;
+        $data = sql_query1('SELECT id FROM phoneVerify WHERE phone = ? AND sendTime >= ? AND used IS NULL AND userIP LIKE ? AND userUA LIKE ? ORDER BY sendTime DESC LIMIT 1', [intval($phone), time_microtime() - $smsConfig['verifyCodeExpTime'], app_getUserIP(), app_getUserUA()]);
+        if (! $data) {
+            return ['status' => false, 'code' => 'LOCAL_NOT_FOUND'];
+        }
+        $smsResult = sms_check_verify_code($phone, $verifyCode, $data['id']);
+        if (! $smsResult) {
+            return ['status' => false, 'id' => null];
+        }
+        return ['status' => true, 'id' => intval($data['id'])];
     }
     function app_setPhoneVerifyUsed($id = 0, $intent = 'default') {
         // 顺便把之前未使用的废掉
@@ -447,6 +454,7 @@
     function app_check($config_text = 'd', $fields = [], $minAdminLevel = 1, $isGET = false) {
         $config = str_split($config_text);
         $json = api_input($isGET);
+        $pvr = 0;
         
         // x标记的逻辑是，不强制登录，但是登录了的还是取登录信息
         if ((! $json['userToken']) && (! in_array('x', $config))) {
@@ -478,13 +486,15 @@
             }
         }
         if (in_array('p', $config)) {
-            $pvr = app_verifyPhone($json['phone'], $json['phoneVerify']);
-            if ($pvr === false) {
-                if (strlen($json['phoneVerify']) != 6) {
-                    api_callback(0, '手机验证码是6位的，你看错了吧~');
-                }
-                api_callback(0, '手机验证码错误或失效~');
+            $smsConfig = c::$SMS_VERIFY_CONFIG;
+            if (strlen($json['phoneVerify']) != intval($smsConfig['codeLength'])) {
+                api_callback(0, '手机验证码是' . intval($smsConfig['codeLength']) . '位的，蠢！');
             }
+            $phoneVerify = app_verifyPhone($json['phone'], $json['phoneVerify']);
+            if (! $phoneVerify['status']) {
+                api_callback(0, app_sms_error_message($phoneVerify, 'check'));
+            }
+            $pvr = intval($phoneVerify['id']);
         }
         $file = api_inputFile();
         if (in_array('f', $config)) {
@@ -493,7 +503,7 @@
             }
         }
         
-        return [$uid, $json, $file];
+        return [$uid, $json, $file, $pvr];
     }
     
     function app_quill_format($oriContent = '') {
@@ -622,28 +632,173 @@
         return !! sql_query1('SELECT id FROM action WHERE parent LIKE ? AND pid = ? AND uid = ? AND type = 2 AND value = 1', [$parent, $id, $uid]);
     }
     
+    // 还有牛头人！Claude 重写了功能，但是没改名字
     function vaptcha_verify($data = []) {
-        $result = http_json($data['server'], [
-            'id' => s::$VAPTCHA_CONFIG['vid'],
-            'secretkey' => s::$VAPTCHA_CONFIG['key'],
-            'scene' => intval($data['scene']),
-            'token' => $data['token'],
-            'ip' => app_getUserIP()
-        ]);
-        return $result['success'];
+        $captcha_id = c::$VAPTCHA_CONFIG['appId'];
+        $captcha_key = s::$VAPTCHA_CONFIG['appKey'];
+        
+        $lot_number = $data['lot_number'] ?? '';
+        $captcha_output = $data['captcha_output'] ?? '';
+        $pass_token = $data['pass_token'] ?? '';
+        $gen_time = $data['gen_time'] ?? '';
+        
+        $sign_token = hash_hmac('sha256', $lot_number, $captcha_key);
+        
+        $query = [
+            'lot_number' => $lot_number,
+            'captcha_output' => $captcha_output,
+            'pass_token' => $pass_token,
+            'gen_time' => $gen_time,
+            'sign_token' => $sign_token,
+        ];
+        
+        $url = 'https://captcha.alicaptcha.com/validate?captcha_id=' . urlencode($captcha_id);
+        try {
+            $result = http($url, http_build_query($query), ['Content-Type: application/x-www-form-urlencoded']);
+            if (! $result) {
+                return true;
+            }
+        } catch (Exception $e) {
+            return true;
+        }
+        return isset($result['result']) && $result['result'] === 'success';
     }
     
-    function vaptcha_sms_send($phone = '', $templateIndex = 'default', $templateParam = [], $vaptchaData = []) {
-        $result = http_json(u('vaptcha://api/sms'), [
-            'smsid' => s::$VAPTCHA_SMS_CONFIG['smsid'],
-            'smskey' => s::$VAPTCHA_SMS_CONFIG['smskey'],
-            'token' => $vaptchaData['token'],
-            'data' => $templateParam,
-            'countrycode' => '86',
-            'phone' => $phone,
-            'templateid' => c::$VAPTCHA_SMS_CONFIG['templateIds'][$templateIndex]
-        ]);
-        return (intval($result) === 200);
+    function aliyun_rpc_percent_encode($str = '') {
+        return str_replace(['+', '*', '%7E'], ['%20', '%2A', '~'], rawurlencode($str));
+    }
+    function aliyun_rpc_request($action = '', $params = []) {
+        $secretConfig = s::$ALIYUN_SMS_CONFIG;
+        $query = array_merge([
+            'AccessKeyId' => $secretConfig['accessKeyId'],
+            'Action' => $action,
+            'Format' => 'JSON',
+            'RegionId' => $secretConfig['regionId'],
+            'SignatureMethod' => 'HMAC-SHA1',
+            'SignatureNonce' => md5(uniqid('', true) . mt_rand(1000, 9999)),
+            'SignatureVersion' => '1.0',
+            'Timestamp' => gmdate('Y-m-d\\TH:i:s\\Z'),
+            'Version' => '2017-05-25'
+        ], $params);
+        ksort($query);
+        $canonicalized = [];
+        foreach ($query as $k => $v) {
+            if ($v === null) continue;
+            if (is_bool($v)) {
+                $v = ($v ? 'true' : 'false');
+            }
+            $canonicalized[] = aliyun_rpc_percent_encode($k) . '=' . aliyun_rpc_percent_encode($v);
+        }
+        $stringToSign = 'POST&%2F&' . aliyun_rpc_percent_encode(implode('&', $canonicalized));
+        $query['Signature'] = base64_encode(hash_hmac('sha1', $stringToSign, $secretConfig['accessKeySecret'] . '&', true));
+        return http($secretConfig['endpoint'], http_build_query($query), ['Content-Type: application/x-www-form-urlencoded'], []);
+    }
+    function app_sms_build_template_params() {
+        $config = c::$SMS_VERIFY_CONFIG;
+        $templateParams = $config['templateParams'];
+        if (! is_array($templateParams)) {
+            $templateParams = [];
+        }
+        $verifyMinutes = max(1, intval(ceil($config['verifyCodeExpTime'] / 1000 / 60)));
+        foreach ($templateParams as $k => $v) {
+            if ($v === '__VERIFY_MINUTES__') {
+                $templateParams[$k] = '' . $verifyMinutes;
+            }
+        }
+        return $templateParams;
+    }
+    function app_sms_error_message($result = [], $scene = 'send') {
+        $code = strtoupper(isset($result['code']) ? $result['code'] : '');
+        $map = [
+            'LOCAL_CONFIG_MISSING' => '短信服务配置还没填好，请联系管理员处理~',
+            'LOCAL_TEMPLATE_INVALID' => '短信模板配置不对，请联系管理员处理~',
+            'LOCAL_HTTP_ERROR' => '短信服务响应异常，请稍后再试试~',
+            'LOCAL_NOT_FOUND' => '手机验证码错误或失效~',
+            'MOBILE_NUMBER_ILLEGAL' => '你的手机号不对劲呢~',
+            'BUSINESS_LIMIT_CONTROL' => '这个手机号今天发送验证码太多次啦~',
+            'FREQUENCY_FAIL' => '发送太频繁啦，稍后再试试~',
+            'INVALID_PARAMETERS' => '短信服务参数配置不对，请联系管理员处理~',
+            'FUNCTION_NOT_OPENED' => '短信服务还没有开通哦，请联系管理员处理~',
+            'RAMPERMISSIONDENY' => '短信服务权限配置不对，请联系管理员处理~',
+            'UNAUTHORIZEDOPERATION' => '短信服务鉴权失败，请联系管理员处理~',
+            'UNKNOWN' => '手机验证码错误或失效~'
+        ];
+        if (isset($map[$code])) {
+            return $map[$code];
+        }
+        if ($scene == 'check') {
+            return '手机验证码错误或失效~';
+        }
+        return (! empty($result['message']) ? '短信服务异常：' . $result['message'] : '发送手机验证码失败了……');
+    }
+    function sms_send_verify_code($phone = '', $outId = '') {
+        $secretConfig = s::$ALIYUN_SMS_CONFIG;
+        $smsConfig = c::$SMS_VERIFY_CONFIG;
+        if (! ($secretConfig['accessKeyId'] && $secretConfig['accessKeySecret'] && $secretConfig['signName'] && $secretConfig['templateCode'])) {
+            return ['status' => false, 'code' => 'LOCAL_CONFIG_MISSING'];
+        }
+        $templateParams = app_sms_build_template_params();
+        if (! in_array('##code##', $templateParams, true)) {
+            return ['status' => false, 'code' => 'LOCAL_TEMPLATE_INVALID'];
+        }
+        $params = [
+            'CountryCode' => $smsConfig['countryCode'],
+            'PhoneNumber' => $phone,
+            'SignName' => $secretConfig['signName'],
+            'TemplateCode' => $secretConfig['templateCode'],
+            'TemplateParam' => json_encode($templateParams, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'CodeLength' => intval($smsConfig['codeLength']),
+            'ValidTime' => intval(ceil($smsConfig['verifyCodeExpTime'] / 1000)),
+            'DuplicatePolicy' => intval($smsConfig['duplicatePolicy']),
+            'Interval' => intval($smsConfig['interval']),
+            'CodeType' => intval($smsConfig['codeType'])
+        ];
+        if ($secretConfig['schemeName']) {
+            $params['SchemeName'] = $secretConfig['schemeName'];
+        }
+        if ($outId !== '') {
+            $params['OutId'] = '' . $outId;
+        }
+        $result = aliyun_rpc_request('SendSmsVerifyCode', $params);
+        if (! is_array($result)) {
+            return ['status' => false, 'code' => 'LOCAL_HTTP_ERROR'];
+        }
+        $code = (isset($result['Code']) ? $result['Code'] : '');
+        $message = (isset($result['Message']) ? $result['Message'] : '');
+        $success = (! empty($result['Success']) && $code == 'OK');
+        return [
+            'status' => $success,
+            'code' => $code,
+            'message' => $message,
+            'data' => $result
+        ];
+    }
+    function sms_check_verify_code($phone = '', $verifyCode = '', $outId = '') {
+        $secretConfig = s::$ALIYUN_SMS_CONFIG;
+        $smsConfig = c::$SMS_VERIFY_CONFIG;
+        if (! ($secretConfig['accessKeyId'] && $secretConfig['accessKeySecret'])) {
+            return ['status' => false, 'code' => 'LOCAL_CONFIG_MISSING'];
+        }
+        $params = [
+            'CountryCode' => $smsConfig['countryCode'],
+            'PhoneNumber' => $phone,
+            'VerifyCode' => $verifyCode,
+            'CaseAuthPolicy' => intval($smsConfig['caseAuthPolicy'])
+        ];
+        if ($secretConfig['schemeName']) {
+            $params['SchemeName'] = $secretConfig['schemeName'];
+        }
+        if ($outId !== '') {
+            $params['OutId'] = '' . $outId;
+        }
+        $result = aliyun_rpc_request('CheckSmsVerifyCode', $params);
+        if (! is_array($result)) {
+            return ['status' => false, 'code' => 'LOCAL_HTTP_ERROR'];
+        }
+        $code = (isset($result['Code']) ? $result['Code'] : '');
+        $message = (isset($result['Message']) ? $result['Message'] : '');
+        $verifyResult = strtoupper(isset($result['Model']['VerifyResult']) ? $result['Model']['VerifyResult'] : 'UNKNOWN');
+        return (! empty($result['Success']) && $code == 'OK' && $verifyResult == 'PASS');
     }
     
     function staticcs_dir($name) {

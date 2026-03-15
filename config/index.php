@@ -183,7 +183,7 @@
         
         public static $INF = [
             'year_from' => '2020',
-            'year_to' => '2025'
+            'year_to' => null
         ];
         public static $SEO_INF = [
             'desc' => '九尾狐工作室，数学、编程、魔方高手云集之地~',
@@ -284,7 +284,13 @@
             'adminClassifyIds' => [0, 1, 4],
             'carouselClassifyId' => 1
         ];
+
+        public static function init() {
+            self::$INF['year_to'] = date('Y');
+        }
     }
+
+    c::init();
     
     require_once __DIR__ . '/secrets.php';
 ?>

@@ -17,7 +17,7 @@
         public static $ALIYUN_SMS_CONFIG = [
             'accessKeyId' => '',
             'accessKeySecret' => '',
-            'regionId' => 'cn-hangzhou',
+            'regionId' => 'cn-hongkong',
             'endpoint' => 'https://dypnsapi.aliyuncs.com/',
             'schemeName' => '',
             'signName' => '',

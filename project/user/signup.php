@@ -7,10 +7,10 @@
     $name_max = c::$USERINF_LENGTH['name_max'];
     $pass_min = c::$USERINF_LENGTH['pass_min'];
     $pass_max = c::$USERINF_LENGTH['pass_max'];
-    if (! (strlen($json['name']) >= $name_min && strlen($json['name']) <= $name_max)) {
+    if (! (mb_strlen($json['name']) >= $name_min && mb_strlen($json['name']) <= $name_max)) {
         api_callback(0, '用户名长度必须在' . $name_min . '~' . $name_max . '之间~');
     }
-    if (! (strlen($json['pass']) >= $pass_min && strlen($json['pass']) <= $pass_max)) {
+    if (! (mb_strlen($json['pass']) >= $pass_min && mb_strlen($json['pass']) <= $pass_max)) {
         api_callback(0, '密码长度必须在' . $pass_min . '~' . $pass_max . '之间~');
     }
     if (! preg_match('/^[A-Za-z0-9_\x{4e00}-\x{9fa5}]+$/u', $json['name'])) {

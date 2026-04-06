@@ -1,4 +1,4 @@
-<?
+<?php
     /* 论坛 详细页数据API */
     
     list($uid, $json) = app_check('x');

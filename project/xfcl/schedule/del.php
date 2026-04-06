@@ -1,4 +1,4 @@
-<?
+<?php
     /* XFCL-赛程 删除API */
     
     list($uid, $json) = app_check('sv', [], 100);

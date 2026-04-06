@@ -1,1 +1,1 @@
-<? api_callback(0, '404 NOT FOUND~'); ?>
+<?php api_callback(0, '404 NOT FOUND~'); ?>

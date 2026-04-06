@@ -1,4 +1,4 @@
-<?
+<?php
     /* 用户数据同步API */
     
     list($uid, $json) = app_check();

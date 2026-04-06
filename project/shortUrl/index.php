@@ -1,4 +1,4 @@
-<?
+<?php
     /* 短链接系统 跳转数据获取API */
     
     $data = sql_query1('SELECT * FROM shortUrl WHERE tag LIKE ? LIMIT 1', [$_GET['tag']]);

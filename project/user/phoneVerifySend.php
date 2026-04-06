@@ -1,4 +1,4 @@
-<?
+<?php
     /* 发送手机验证码API（注册/找回密码） */
     
     list($uid, $json) = app_check('xva', ['phone']);

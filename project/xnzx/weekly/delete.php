@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-班级周报 周报删除API */
     
     list($uid, $json) = app_check('vas', ['id'], 1);

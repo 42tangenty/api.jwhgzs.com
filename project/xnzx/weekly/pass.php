@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-班级周报 周报过审/取消过审API */
     
     list($uid, $json) = app_check('as', ['id'], 1);

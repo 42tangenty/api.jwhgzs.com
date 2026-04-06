@@ -1,4 +1,4 @@
-<?
+<?php
     /* 首页轮播数据同步API */
     
     list($uid, $json) = app_check('x');

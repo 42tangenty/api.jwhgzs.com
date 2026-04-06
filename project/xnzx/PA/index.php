@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-珍贵档案 公共数据API */
     
     list($uid, $json) = app_check('x');

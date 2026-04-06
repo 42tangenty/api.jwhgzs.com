@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-班级周报 周报强制出版/取消强制出版API */
     
     list($uid, $json) = app_check('as', ['id'], 1);

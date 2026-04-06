@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-新宁空间管理 数据API */
     
     list($uid, $json) = app_check('s', [], 1);

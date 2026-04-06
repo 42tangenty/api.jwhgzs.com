@@ -1,4 +1,4 @@
-<?
+<?php
     /* XFCL-赛程 数据API */
     
     list($uid, $json) = app_check('x', []);

@@ -1,4 +1,4 @@
-<?
+<?php
     /* 用户登录API */
     
     list($uid, $json) = app_check('xva', ['name', 'pass']);

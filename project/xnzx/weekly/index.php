@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-班级周报 公共数据API */
     
     list($uid, $json) = app_check('x');

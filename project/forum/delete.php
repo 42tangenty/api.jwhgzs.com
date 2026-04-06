@@ -1,4 +1,4 @@
-<?
+<?php
     /* 论坛 删除API */
     
     list($uid, $json) = app_check('vs', [], 100);

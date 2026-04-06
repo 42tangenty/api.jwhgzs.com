@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-新宁空间管理 修改学生API */
     
     list($uid, $json) = app_check('sa', ['id', 'sid', 'name', 'sex'], 1);

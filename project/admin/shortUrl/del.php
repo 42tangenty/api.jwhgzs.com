@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-短链接管理 删除API */
     
     list($uid, $json) = app_check('sv', [], 100);

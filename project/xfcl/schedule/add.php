@@ -1,4 +1,4 @@
-<?
+<?php
     /* XFCL-赛程 添加API */
     
     list($uid, $json) = app_check('sa', ['time', 'score'], 100);

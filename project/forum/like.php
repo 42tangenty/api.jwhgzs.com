@@ -1,4 +1,4 @@
-<?
+<?php
     /* 论坛 点赞API */
     
     list($uid, $json) = app_check();

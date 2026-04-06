@@ -1,4 +1,4 @@
-<?
+<?php
     /* 用户数据设置API */
     
     list($uid, $json) = app_check('a', ['key']);

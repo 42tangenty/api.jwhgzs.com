@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-新宁空间管理 删除学生API */
     
     list($uid, $json) = app_check('sv', ['id'], 1);

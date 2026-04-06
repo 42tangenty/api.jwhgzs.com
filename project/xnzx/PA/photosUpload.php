@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-珍贵档案 照片上传API */
     
     list($uid, $json, $file) = app_check('sf');

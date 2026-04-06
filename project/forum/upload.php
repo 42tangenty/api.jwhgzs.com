@@ -1,4 +1,4 @@
-<?
+<?php
     /* 论坛 话题发布、话题发言API */
     
     list($uid, $json) = app_check('v');

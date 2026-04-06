@@ -1,4 +1,4 @@
-<?
+<?php
     /* 临时文件上传API */
     
     list($uid, $json, $file) = app_check('xfa', ['fname']);

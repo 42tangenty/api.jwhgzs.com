@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-珍贵档案 添加外号/梗API */
     
     list($uid, $json) = app_check('s', [], 100);

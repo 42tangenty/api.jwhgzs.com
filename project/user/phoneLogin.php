@@ -1,4 +1,4 @@
-<?
+<?php
     /* 用户登录（手机号）API */
     
     list($uid, $json, $file, $pvr) = app_check('xvpa', ['phone', 'phoneVerify']);

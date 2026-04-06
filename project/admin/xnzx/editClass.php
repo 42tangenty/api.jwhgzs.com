@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-新宁空间管理 修改班级API */
     
     list($uid, $json) = app_check('sa', ['id', 'year', 'class'], 1);

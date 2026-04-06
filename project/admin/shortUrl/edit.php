@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-短链接管理 修改API */
     
     list($uid, $json) = app_check('sa', ['url'], 100);

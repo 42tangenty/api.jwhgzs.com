@@ -1,4 +1,4 @@
-<?
+<?php
     /* 后台管理-新宁空间管理 设置学生九尾狐账号API */
     
     list($uid, $json) = app_check('sa', ['id'], 1);

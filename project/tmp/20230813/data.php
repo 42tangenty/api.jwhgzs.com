@@ -1,4 +1,4 @@
-<?
+<?php
     /* 临时文件列表API */
     
     list($uid, $json, $file) = app_check('x');

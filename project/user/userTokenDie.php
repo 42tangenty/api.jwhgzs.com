@@ -1,4 +1,4 @@
-<?
+<?php
     /* 强制设备下线API */
     
     list($uid, $json) = app_check();

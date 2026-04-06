@@ -1,4 +1,4 @@
-<?
+<?php
     /* 新宁空间-班级周报 周报doc文档下载API */
     
     list($uid, $json) = app_check('x', [], 1, true);

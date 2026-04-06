@@ -1,4 +1,4 @@
-<?
+<?php
     /* 用户头像上传API */
     
     list($uid, $json, $file) = app_check('vf');

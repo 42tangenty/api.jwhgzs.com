@@ -64,6 +64,7 @@
                     0 => 'https://xfcl.jwhgzs.com'
                 ]
             ],
+            // TODO: .su short url end of support
             'shortUrl' => [
                 0 => 'https://jwh.su'
             ],
@@ -93,6 +94,7 @@
                         'sponsor_vaptcha' => '/sponsors_logo/vaptcha.png?v=1',
                         'sponsor_ym163com' => '/sponsors_logo/ym163com.svg?v=5',
                         'sponsor_regery' => '/sponsors_logo/regery.svg?v=5',
+                        'sponsor_spaceship' => '/sponsors_logo/spaceship.svg?v=1',
                         'bkg' => '/bkg.svg?v=2',
                         'bkg2' => '/bkg2.jpg?v=2',
                         'link_xnzx' => '/links_banner/xnzx.svg?v=5',
@@ -167,6 +169,9 @@
                 ],
                 'regery' => [
                     0 => 'https://www.regery.com/en?pr=jjjvhib'
+                ],
+                'spaceship' => [
+                    0 => 'https://www.spaceship.com'
                 ]
             ],
             'node_modules' => [
@@ -246,7 +251,9 @@
             ]
         ];
         public static $STATICCS_CONFIG = [
-            'root' => '/www/wwwroot/static.jwhgzs.com'
+            // Stupid issue.
+            // 'root' => '/www/wwwroot/static.jwhgzs.com'
+            'root' => '/www/sites/static.jwhgzs.com/index'
         ];
         
         public static $QUILL_CONFIG = [

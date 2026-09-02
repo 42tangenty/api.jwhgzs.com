@@ -177,11 +177,7 @@
                 0 => '/_nuxt/node_modules'
             ],
             'other' => [
-                'whatIsSu' => 'https://www.youngpioneertours.com/su/',
-                'darkmagic' => 'https://test2.jwhgzs.com/fuck',
-                'doc_cards' => 'https://p.kdocs.cn/s/2WRKMBQANA',
-                'doc_memories' => 'https://p.kdocs.cn/s/FCR2MBQA2U',
-                'doc_bible' => 'https://p.kdocs.cn/s/4HF2MBQANA'
+                // 'whatIsSu' => 'https://www.youngpioneertours.com/su/'
             ]
         ];
         

@@ -64,15 +64,14 @@
                     0 => 'https://xfcl.jwhgzs.com'
                 ]
             ],
-            // TODO: .su short url end of support
             'shortUrl' => [
-                0 => 'https://jwh.su'
+                0 => 'https://jwh-su.jwhgzs.com'
             ],
             'shortUrlPortal' => [
-                0 => 'https://portal.jwh.su'
+                0 => 'https://portal-jwh-su.jwhgzs.com'
             ],
             'tzy' => [
-                0 => 'https://www.tzy.su'
+                0 => 'https://tzy-su.jwhgzs.com'
             ],
             'static' => [
                 0 => 'https://static.jwhgzs.com',
